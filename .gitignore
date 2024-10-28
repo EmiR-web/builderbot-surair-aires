@@ -12,5 +12,5 @@ node_modules
 # Archivo .gitignore
 .env
 
-#Archivo credenciales Google Cloud
+#Archivo credenciales Google Clou
 credentials.json

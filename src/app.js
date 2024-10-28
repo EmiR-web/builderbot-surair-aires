@@ -3,8 +3,9 @@ const { createBot, createProvider, createFlow, addKeyword, EVENTS, utils } = req
 const { MemoryDB: Database } = require('@builderbot/bot');
 const { BaileysProvider : Provider} = require('@builderbot/provider-baileys');
 
-const PORT = process.env.PORT ?? 3008;
+require('dotenv').config();
 
+const PORT = process.env.PORT ?? 3008;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
   
   const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
@@ -159,9 +160,9 @@ const delay = (ms) => new Promise((res) => setTimeout(res, ms));
   const cloudinary = require('cloudinary').v2;
   
   cloudinary.config({
-    cloud_name: 'daakgejsa',
-    api_key: '538916534268159',
-    api_secret: 'MfaUkbEDetqKUPbfi-xKmxBFOUM'
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
   });
   
   
@@ -172,10 +173,10 @@ const delay = (ms) => new Promise((res) => setTimeout(res, ms));
   });
   
   const apiSurair = new WooCommerceRestApi({
-    url: "https://surair.com.ar/", // URL de tu tienda WooCommerce
-    consumerKey: "ck_7515cd8dc0a0efcc1269d2725b917f75caf86fb4",     // Tu Consumer Key
-    consumerSecret: "cs_9cd30f54644d006f709eca6c1b0e704d10f39f90",  // Tu Consumer Secret
-    version: "wc/v3"              // Versión de la API
+    url: process.env.WOOCOMMERCE_URL,
+    consumerKey: process.env.WOOCOMMERCE_CONSUMER_KEY,
+    consumerSecret: process.env.WOOCOMMERCE_CONSUMER_SECRET,
+    version: "wc/v3"
   });
   
   const convertirImagen = async (imageUrl) => {

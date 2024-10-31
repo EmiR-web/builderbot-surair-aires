@@ -440,7 +440,6 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
       await utils.delay(3000);
 
       if (!foundProduct) {
-
           await flowDynamic('🫤Por el momento no encontré un producto disponible de esas características.\n🖐️No te preocupes, evaluaré opciones y te asesoraré.');
           return gotoFlow(flujoFinal);
       }
@@ -458,9 +457,20 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
             const imagenUrl = producto.images[0]?.src || 'https://mediumspringgreen-antelope-284716.hostingersite.com/wp-content/uploads/2020/08/surair-logo.png';
             const imagenConvertida = await convertirImagen(imagenUrl);
 
+            let garantia;
+            const frigoriasValue = parseInt(frigorias);
+
+            if (frigoriasValue >= 2250 && frigoriasValue <= 7500) {
+                garantia = (marcaEncontrada === 'Surrey') ? '2 años, de *fábrica*' : '1 año, de *fábrica*';
+            } else if (frigoriasValue >= 9000) {
+                garantia = '1 año, de *fábrica*';
+            } else {
+                garantia = 'Consultar';
+            }
+
             await flowDynamic([
                 {
-                    body: `🔹 *Producto*: ${producto.name}\n💰 *Precio*: $${precioFormateado}\n🔗 *Link*: ${producto.permalink}`,
+                    body: `🔹 *Producto*: ${producto.name}\n💰 *Precio*: $${precioFormateado}\n📋 *Garantía*: ${garantia}\n🔗 *Link*: ${producto.permalink}`,
                     media: imagenConvertida,
                 },'📦Voy a consultar el stock, nuestros productos vuelan y tengo que chequear constantemente 😅'
             ]

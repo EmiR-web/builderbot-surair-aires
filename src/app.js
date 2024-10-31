@@ -41,7 +41,9 @@ const colorsByDay = {
   6: { red: 0.6, green: 0.6, blue: 0.3},   // Sábado
 };
 
-const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
+const credenciales = (process.env.GOOGLE_CREDENTIALS_JSON);
+console.log(credenciales);
+const credentials = JSON.parse.credenciales;
 
 const auth = new GoogleAuth({
   credentials,

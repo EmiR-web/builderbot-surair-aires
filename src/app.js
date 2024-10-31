@@ -205,7 +205,7 @@ const buscarProductos = async (marca, tecnologia, frigorias) => {
 };
 /////// INICIO DE FLUJOS DE CONVERSACIÓN /////// 
 const flujoSalida = addKeyword(EVENTS.ACTION)
-.addAnswer({delay:200},['↩️Saliste del cuestionario.','👩‍💻Escribime tu consulta y a la brevedad me comunicaré.','','🔄️Si quieres reiniciar, escribe *repetir*.']);
+.addAnswer(['↩️Saliste del cuestionario.','👩‍💻Escribime tu consulta y a la brevedad me comunicaré.','','🔄️Si quieres reiniciar, escribe *repetir*.']);
 
 
 const flujoCargaDatos = addKeyword(EVENTS.ACTION)

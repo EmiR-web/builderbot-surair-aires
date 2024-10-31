@@ -163,7 +163,7 @@ const convertirImagen = async (imageUrl) => {
   try {
 
     if (imageUrl.endsWith('.webp')) {
-      console.log('La imagen es formato WEBP. Se procede a convertir.');
+      // console.log('La imagen es formato WEBP. Se procede a convertir.');
 
       // Convierte la imagen a formato JPG usando Cloudinary
       const result = await cloudinary.uploader.upload(imageUrl, {
@@ -171,7 +171,7 @@ const convertirImagen = async (imageUrl) => {
         transformation: [{ quality: "auto" }] 
       });
 
-      console.log('Imagen convertida:', result.secure_url);
+      // console.log('Imagen convertida:', result.secure_url);
       return result.secure_url; 
     }
     return imageUrl;
@@ -205,7 +205,7 @@ const buscarProductos = async (marca, tecnologia, frigorias) => {
 };
 /////// INICIO DE FLUJOS DE CONVERSACIÓN /////// 
 const flujoSalida = addKeyword(EVENTS.ACTION)
-.addAnswer(['↩️Saliste del cuestionario.','👩‍💻Escribime tu consulta y a la brevedad me comunicaré.','','🔄️Si quieres reiniciar, escribe *repetir*.']);
+.addAnswer({delay:200},['↩️Saliste del cuestionario.','👩‍💻Escribime tu consulta y a la brevedad me comunicaré.','','🔄️Si quieres reiniciar, escribe *repetir*.']);
 
 
 const flujoCargaDatos = addKeyword(EVENTS.ACTION)
@@ -223,7 +223,7 @@ const flujoCargaDatos = addKeyword(EVENTS.ACTION)
 
 
   const contactData = [formattedDate, numero, nombre, marca, frigorias, tecnologia, medio];
-  console.log(contactData);
+  // console.log(contactData);
 
   const isInserted = await insertContact('1L3F_NUof6PDdIzVYGfqn1cj9PTh1pcOHB7TCvV5jIeI', contactData, horario);
 
@@ -231,7 +231,7 @@ const flujoCargaDatos = addKeyword(EVENTS.ACTION)
     return endFlow('🥴Lo siento, tuvimos un inconveniente al procesar tus datos.\n🧐Igualmente voy a chequearlos y me comunico dentro de los horarios de atención.\n\n¡Gracias por contactarnos!');
   } else {
     blacklist.add(ctx.from); 
-    return endFlow(`✍️Excelente, ya anoté todo.\nMe comunicaré dentro del horario indicado, de *${horarioTexto}*👈📞.\n\n👩‍🦳¡Gracias por contactarnos!`);
+    return endFlow(`📝Excelente, ya anoté todo.\n\nMe comunicaré dentro del horario indicado, de *${horarioTexto}*👈📞.\n\n👩‍🦳¡Gracias por contactarnos!`);
   }
 });
 
@@ -252,7 +252,8 @@ const flujoFinalMedio = addKeyword(EVENTS.ACTION)
       }
       await state.update({ medio });
 
-      await flowDynamic(`Seleccionaste ${medio}`);
+      await flowDynamic(`Seleccionaste ${medio}\n\n⌛Dame un momento...✍️`);
+      await utils.delay(3000);
 
       return gotoFlow(flujoCargaDatos);
 
@@ -278,6 +279,8 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
       }
       await state.update({ horario });
       const horarioElegido = horarioAtencion[horario];
+
+      await utils.delay(3000);
 
       await flowDynamic([`Seleccionaste ${horarioElegido}`, `*¿Prefieres por mensaje o llamada?*\n\n1️⃣ Mensaje\n2️⃣ Llamada\n\n❎Salir del cuestionario`])
 
@@ -312,8 +315,10 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
     );  
   const flujoFinal = addKeyword(EVENTS.ACTION)
   .addAction(async (ctx, { flowDynamic}) => {
+    await utils.delay(3000);
 
     if (isOutOfSchedule()) {
+      
       await flowDynamic(`*Por favor, selecciona un horario en el que podamos comunicarnos personalmente*\n(⚠️ El horario elegido corre a partir del lunes)\n\n1️⃣ 10 a 12 hs\n2️⃣ 14 a 15 hs\n3️⃣ 17 a 19 hs\n\n❎Salir del cuestionario`);
     }else {
       await flowDynamic('*Por favor, selecciona un horario en el que podamos comunicarnos personalmente*\n\n1️⃣ 10 a 12 hs\n2️⃣ 14 a 15 hs\n3️⃣ 17 a 19 hs\n\n❎Salir del cuestionario')
@@ -385,8 +390,8 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
         const marca = marcas[marcaIndex] || 'desconocida';
         await state.update({ marcaIndex, marcaInicial: marca, marca });
         console.log(`Marca seleccionada: ${marca}`);
-        const estado = state.getMyState();
-        console.log(estado);
+        // const estado = state.getMyState();
+        // console.log(estado);
 
         await flowDynamic(`¡Genial! Seleccionaste la marca ${marca}.`);
     })
@@ -400,10 +405,11 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
 🔹 *Tecnología*: ${tecnologia}\n
 🔹 *Frigorías*: ${frigorias}\n\n
 ⌛Estoy buscando el producto en nuestra página...`;
+    
+        await utils.delay(3000);
 
         await flowDynamic(mensajeFinal);
-        await delay(500);
-    })
+      })
     .addAction(async (ctx, { state, flowDynamic, endFlow, gotoFlow }) => {
         const tecnologia = await state.get('tecnologia');
         const frigorias = await state.get('frigorias');
@@ -415,7 +421,7 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
 
         for (let marcaIndex = 0; marcaIndex < marcas.length; marcaIndex++) {
           const marca = marcas[marcaIndex];
-          console.log(`Buscando productos para la marca: ${marca}`);
+          // console.log(`Buscando productos para la marca: ${marca}`);
 
           try {
               productos = await buscarProductos(marca, tecnologia, frigorias);
@@ -431,8 +437,10 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
               return endFlow('⛓️‍💥Ups, hubo un problema al buscar el producto. A la brevedad me estaré comunicando para ofrecerte una alternativa.');
           }
       }
+      await utils.delay(3000);
 
       if (!foundProduct) {
+
           await flowDynamic('🫤Por el momento no encontré un producto disponible de esas características.\n🖐️No te preocupes, evaluaré opciones y te asesoraré.');
           return gotoFlow(flujoFinal);
       }
@@ -440,7 +448,8 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
       const marcaEncontrada = await state.get('marca');
       
       if (marcaEncontrada !== marcaInicial) {
-          await flowDynamic(`ℹ️ No encontré en *${marcaInicial}*, pero encontré este producto de características similares marca *${marcaEncontrada}*.\n\n😉(La calidad sigue siendo excelente)`);
+
+          await flowDynamic(`ℹ️ No encontré en *${marcaInicial}*, pero encontré este producto de características similares marca *${marcaEncontrada}*.👇\n\n😉(La calidad sigue siendo excelente)`);
       }
 
         for (const producto of productos) {
@@ -453,7 +462,7 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
                 {
                     body: `🔹 *Producto*: ${producto.name}\n💰 *Precio*: $${precioFormateado}\n🔗 *Link*: ${producto.permalink}`,
                     media: imagenConvertida,
-                },'📦Voy a consultar el stock, nuestros productos vuelan y tengo que verificarlo constantemente 🥵'
+                },'📦Voy a consultar el stock, nuestros productos vuelan y tengo que chequear constantemente 😅'
             ]
           );
         }
@@ -495,7 +504,8 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
       }
       await state.update({ frigorias });
       console.log(`Frigorías: ${frigorias}`);
-  
+      await utils.delay(3000);
+
       return await flowDynamic([`Seleccionaste ${frigorias} frigorías.`,'*¿Qué marca prefieres?*\n\n1️⃣ Surrey\n2️⃣ Midea\n3️⃣ York\n\n❎: Salir del cuestionario']);
     })
     .addAction(
@@ -548,9 +558,12 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
   
       console.log(`Tecnología seleccionada: ${tecnologia}`);
   
-      let mensaje = (tecnologia == 'Inverter') ? `Seleccionaste tecnología ${tecnologia}.¡Excelente decisión! 😉` : `Seleccionaste tecnología ${tecnologia} 👌`
+      let mensaje = (tecnologia == 'Inverter') ? `Seleccionaste tecnología ${tecnologia}.¡Excelente decisión! 😉` : `Seleccionaste tecnología ${tecnologia} 👌`;
       await flowDynamic(`${mensaje}`);
-      return await flowDynamic('*¿Cuántas frigorías?*\n\n1️⃣: 2250 (cubre 14m2)\n2️⃣: 3000 (cubre 24m2)\n3️⃣: 4500 (cubre 36m2)\n4️⃣: 5500 (cubre 44m2)\n5️⃣: 7500 (cubre 70m2)\n6️⃣: 9000 (cubre 72m2)\n7️⃣: 15000 (cubre 121m2)\n8️⃣: 18000 (cubre 144m2)\n\n❎: Salir del cuestionario');
+
+      await utils.delay(3000);
+
+      return await flowDynamic(`*¿Cuántas frigorías?*\n\n1️⃣: 2250 (cubre 14m2)\n2️⃣: 3000 (cubre 24m2)\n3️⃣: 4500 (cubre 36m2)\n4️⃣: 5500 (cubre 44m2)\n5️⃣: 7500 (cubre 70m2)\n6️⃣: 9000 (cubre 72m2)\n7️⃣: 15000 (cubre 121m2)\n8️⃣: 18000 (cubre 144m2)\n\n❎: Salir del cuestionario`);
   
     })
     .addAction({capture:true},async (ctx, {fallBack, flowDynamic, gotoFlow}) => {
@@ -584,26 +597,31 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
   // Flujo Principal
 const flowPrincipal = addKeyword(['quiero más información', 'repetir'])
 .addAction(async (ctx, { flowDynamic, blacklist }) => {
-  console.log(ctx);
+  // console.log(ctx);
   const isLocal = await isBahiaBlanca(ctx.from);
-  const listaNegra = blacklist.checkIf(ctx.from);
-  console.log(listaNegra);
+  // const listaNegra = blacklist.checkIf(ctx.from);
+  // console.log(listaNegra);
 
- if (listaNegra) {
-  blacklist.remove(ctx.from);
-  await flowDynamic(`${ctx.from}! se quitó de la blacklist`);
-}
+//  if (listaNegra) {
+//   blacklist.remove(ctx.from);
+//   await flowDynamic(`${ctx.from}! se quitó de la blacklist`);
+// }
 
-
+  await utils.delay(3000);
   await flowDynamic(["👋 Hola, bienvenido a *Surair Climatización* 😊\n📍 Nos encontramos en *Pedro Pico 276*, Bahía Blanca",
 "🙋‍♀️ Mi Nombre es Milva, soy asesora comercial de la empresa.\n\n¿Estás buscando algún equipo en particular?\n🤝 Voy a ayudarte con eso"
   ]);
+  
+  await utils.delay(3000);
+
   if (isLocal) {
+
     await flowDynamic([
       {body: "Te comparto las opciones de pago que tenemos actualmente de forma presencial 💳",
       media: 'https://iili.io/dyr6EPt.jpg'}
     ]);
   } else {
+
     await flowDynamic([
       {body: "Te comparto las opciones de pago que tenemos actualmente a distancia 💸",
       media: 'https://iili.io/29qoSsI.jpg'}
@@ -611,6 +629,8 @@ const flowPrincipal = addKeyword(['quiero más información', 'repetir'])
   }
 })
 .addAction(async (ctx, { flowDynamic }) => {
+  await utils.delay(3000);
+
   await flowDynamic("👉 *Responde indicando las opciones numeradas*\n\n(Son sólo 3 preguntas, no te preocupes 😎)");
   await flowDynamic("*Elige la tecnología que buscas*\n\n1️⃣: Inverter *(35% de ahorro energético)*\n2️⃣: ON/OFF\n\n❎: Salir del cuestionario");
 })

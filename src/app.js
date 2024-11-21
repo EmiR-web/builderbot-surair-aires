@@ -42,7 +42,7 @@ const colorsByDay = {
 };
 
 const credenciales = (process.env.GOOGLE_CREDENTIALS_JSON);
-// console.log(credenciales);
+console.log(credenciales);
 const credentials = JSON.parse(credenciales);
 
 const auth = new GoogleAuth({

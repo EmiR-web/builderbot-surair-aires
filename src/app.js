@@ -32,13 +32,13 @@ function isOutOfSchedule() {
 }
 
 const colorsByDay = {
-  0: { red: 1.0, green: 0.8, blue: 0.8 },   // Domingo
-  1: { red: 0.8, green: 1.0, blue: 0.8 },   // Lunes
-  2: { red: 0.8, green: 0.8, blue: 1.0 },   // Martes
-  3: { red: 1.0, green: 1.0, blue: 0.8 },   // Miércoles
-  4: { red: 1.0, green: 0.8, blue: 1.0 },   // Jueves
-  5: { red: 0.8, green: 1.0, blue: 1.0 },   // Viernes
-  6: { red: 0.6, green: 0.6, blue: 0.3},   // Sábado
+  0: { red: 0.98, green: 0.92, blue: 0.92 }, // Domingo (rosado pastel)
+  1: { red: 0.88, green: 0.94, blue: 0.82 }, // Lunes (verde menta suave)
+  2: { red: 0.82, green: 0.88, blue: 0.94 }, // Martes (celeste pastel)
+  3: { red: 0.98, green: 0.98, blue: 0.86 }, // Miércoles (amarillo suave)
+  4: { red: 0.94, green: 0.82, blue: 0.94 }, // Jueves (lila pastel)
+  5: { red: 0.82, green: 0.94, blue: 0.94 }, // Viernes (turquesa pastel)
+  6: { red: 0.94, green: 0.88, blue: 0.78 }, // Sábado (beige suave)
 };
 
 const credenciales = (process.env.GOOGLE_CREDENTIALS_JSON);
@@ -217,12 +217,14 @@ const flujoCargaDatos = addKeyword(EVENTS.ACTION)
   const marca = state.get('marca');
   const tecnologia = state.get('tecnologia');
   const frigorias = state.get('frigorias');
-  const medio = state.get('medio');
+  // const medio = state.get('medio');
   const horario = state.get('horario');
   const horarioTexto = horarioAtencion[horario];
 
 
-  const contactData = [formattedDate, numero, nombre, marca, frigorias, tecnologia, medio];
+  // const contactData = [formattedDate, numero, nombre, marca, frigorias, tecnologia, medio];
+  const contactData = [formattedDate, numero, nombre, marca, frigorias, tecnologia, 'Llamada'];
+
   // console.log(contactData);
 
   const isInserted = await insertContact('1L3F_NUof6PDdIzVYGfqn1cj9PTh1pcOHB7TCvV5jIeI', contactData, horario);
@@ -231,36 +233,36 @@ const flujoCargaDatos = addKeyword(EVENTS.ACTION)
     return endFlow('🥴Lo siento, tuvimos un inconveniente al procesar tus datos.\n🧐Igualmente voy a chequearlos y me comunico dentro de los horarios de atención.\n\n¡Gracias por contactarnos!');
   } else {
     blacklist.add(ctx.from); 
-    return endFlow(`📝Excelente, ya anoté todo.\n\nMe comunicaré dentro del horario indicado, de *${horarioTexto}*👈📞.\n\n👩‍🦳¡Gracias por contactarnos!`);
+    return endFlow(`📝Excelente, ya anoté todo.\n\nMe comunicaré dentro del horario indicado, de *${horarioTexto}*👈📞.\n\n👩‍🦳¡Gracias por contactarte con Surair!`);
   }
 });
 
-const flujoFinalMedio = addKeyword(EVENTS.ACTION)
-    .addAction(async (ctx, { state, flowDynamic, gotoFlow }) => {
+// const flujoFinalMedio = addKeyword(EVENTS.ACTION)
+//     .addAction(async (ctx, { state, flowDynamic, gotoFlow }) => {
   
-      let medio;
-      switch (true) {
-        case ctx.body.includes('1'):
-          medio = 'Mensaje';
-          break;
-        case ctx.body.includes('2'):
-          medio = 'Llamada';
-          break;
-        default:
-          medio = 'desconocido';
-          break;
-      }
-      await state.update({ medio });
+//       let medio;
+//       switch (true) {
+//         case ctx.body.includes('1'):
+//           medio = 'Mensaje';
+//           break;
+//         case ctx.body.includes('2'):
+//           medio = 'Llamada';
+//           break;
+//         default:
+//           medio = 'desconocido';
+//           break;
+//       }
+//       await state.update({ medio });
 
-      await flowDynamic(`Seleccionaste ${medio}\n\n⌛Dame un momento...✍️`);
-      await utils.delay(3000);
+//       await flowDynamic(`Seleccionaste ${medio}\n\n⌛Dame un momento...✍️`);
+//       await utils.delay(2000);
 
-      return gotoFlow(flujoCargaDatos);
+//       return gotoFlow(flujoCargaDatos);
 
-    })
+//     })
 
 const flujoFinalHorario = addKeyword(EVENTS.ACTION)
-    .addAction(async (ctx, { flowDynamic, state }) => {
+    .addAction(async (ctx, { flowDynamic,gotoFlow, state }) => {
   
       let horario;
       switch (true) {
@@ -280,48 +282,55 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
       await state.update({ horario });
       const horarioElegido = horarioAtencion[horario];
 
-      await utils.delay(3000);
+      await utils.delay(2000);
 
-      await flowDynamic([`Seleccionaste ${horarioElegido}`, `*¿Prefieres por mensaje o llamada?*\n\n1️⃣ Mensaje\n2️⃣ Llamada\n\n❎Salir del cuestionario`])
+      await flowDynamic(
+        // [`Seleccionaste ${horarioElegido}`,
+        //  `*¿Prefieres por mensaje o llamada?*\n\n1️⃣ Mensaje\n2️⃣ Llamada\n\n❎Salir del cuestionario`]
+      `Seleccionaste ${horarioElegido}` 
+      )
+      // return gotoFlow(flujoFinalMedio);
+      return gotoFlow(flujoCargaDatos);
 
     })
-    .addAction(
-      { capture: true }, async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
+    // .addAction(
+    //   { capture: true }, async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
         
-        const validOptions = ['1', '2', 'x'];
-        const opcionesTexto = validOptions.join(' ⚡ ');
+    //     const validOptions = ['1', '2', 'x'];
+    //     const opcionesTexto = validOptions.join(' ⚡ ');
     
-        const userInput = ctx.body.trim().toLowerCase();
+    //     const userInput = ctx.body.trim().toLowerCase();
     
-        const userWords = userInput.match(/\b[^\s]+\b/g) || [];  
+    //     const userWords = userInput.match(/\b[^\s]+\b/g) || [];  
 
-        const selectedOptions = userWords.filter(option => validOptions.includes(option));  
-        if (!selectedOptions.length) {
-          await flowDynamic(`⚠️ Recuerda responder *sólo* con una opción válida:\n ${opcionesTexto}.\n\n↩️Si quieres salir, escribe *X*`);
-          return fallBack('*¿Prefieres por mensaje o llamada?*\n\n1️⃣ Mensaje\n2️⃣ Llamada\n\n❎Salir del cuestionario');
-        }
+    //     const selectedOptions = userWords.filter(option => validOptions.includes(option));  
+    //     if (!selectedOptions.length) {
+    //       await flowDynamic(`⚠️ Recuerda responder *sólo* con una opción válida:\n ${opcionesTexto}.\n\n↩️Si quieres salir, escribe *X*`);
+    //       return fallBack('*¿Prefieres por mensaje o llamada?*\n\n1️⃣ Mensaje\n2️⃣ Llamada\n\n❎Salir del cuestionario');
+    //     }
     
-        if (selectedOptions.length > 1) {
-          await flowDynamic(`⚠️ Por favor, elige *sólo una opción* válida:\n ${opcionesTexto}\n\n↩️Si quieres salir, escribe *X*`);
-          return fallBack('*¿Prefieres por mensaje o llamada?*\n\n1️⃣ Mensaje\n2️⃣ Llamada\n\n❎Salir del cuestionario');
-        }
+    //     if (selectedOptions.length > 1) {
+    //       await flowDynamic(`⚠️ Por favor, elige *sólo una opción* válida:\n ${opcionesTexto}\n\n↩️Si quieres salir, escribe *X*`);
+    //       return fallBack('*¿Prefieres por mensaje o llamada?*\n\n1️⃣ Mensaje\n2️⃣ Llamada\n\n❎Salir del cuestionario');
+    //     }
     
-        if (selectedOptions.length == 1 && selectedOptions.includes('x')) {
-          return gotoFlow(flujoSalida); 
-        }
+    //     if (selectedOptions.length == 1 && selectedOptions.includes('x')) {
+    //       return gotoFlow(flujoSalida); 
+    //     }
     
-        return gotoFlow(flujoFinalMedio);
-      }
-    );  
+    //     return gotoFlow(flujoFinalMedio);
+    //   }
+    // )
+    ;  
   const flujoFinal = addKeyword(EVENTS.ACTION)
   .addAction(async (ctx, { flowDynamic}) => {
-    await utils.delay(3000);
+    await utils.delay(2000);
 
     if (isOutOfSchedule()) {
       
-      await flowDynamic(`*Por favor, selecciona un horario en el que podamos comunicarnos personalmente*\n(⚠️ El horario elegido corre a partir del lunes)\n\n1️⃣ 10 a 12 hs\n2️⃣ 14 a 15 hs\n3️⃣ 17 a 19 hs\n\n❎Salir del cuestionario`);
+      await flowDynamic(`⌚Elige el horario que te sea de comodidad y me contactaré personalmente.\n\n*Tu próximo aire está cerca* 💪\n(⚠️ El horario elegido corre a partir del lunes)\n\n1️⃣ 10 a 12 hs\n2️⃣ 14 a 15 hs\n3️⃣ 17 a 19 hs\n\n❎Salir del cuestionario`);
     }else {
-      await flowDynamic('*Por favor, selecciona un horario en el que podamos comunicarnos personalmente*\n\n1️⃣ 10 a 12 hs\n2️⃣ 14 a 15 hs\n3️⃣ 17 a 19 hs\n\n❎Salir del cuestionario')
+      await flowDynamic('⌚Elige el horario que te sea de comodidad y me contactaré personalmente.\n\n*Tu próximo aire está cerca* 💪\n\n1️⃣ 10 a 12 hs\n2️⃣ 14 a 15 hs\n3️⃣ 17 a 19 hs\n\n❎Salir del cuestionario')
     }
     }
   )
@@ -340,22 +349,22 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
       if (!selectedOptions.length) {
         if (isOutOfSchedule()) {
           await flowDynamic(`⚠️ Recuerda responder *sólo* con una opción válida:\n ${opcionesTexto}.\n\n↩️Si quieres salir, escribe *X*`);
-          return fallBack(`*Por favor, selecciona un horario en el que podamos comunicarnos personalmente*\n(⚠️ El horario elegido corre a partir del lunes)\n\n1️⃣ 10 a 12 hs\n2️⃣ 14 a 15 hs\n3️⃣ 17 a 19 hs\n\n❎Salir del cuestionario`);
+          return fallBack(`Elige el horario que te sea de comodidad y me contactaré personalmente.\n(⚠️ El horario elegido corre a partir del lunes)\n\n1️⃣ 10 a 12 hs\n2️⃣ 14 a 15 hs\n3️⃣ 17 a 19 hs\n\n❎Salir del cuestionario`);
   
         }else {
           await flowDynamic(`⚠️ Recuerda responder *sólo* con una opción válida:\n ${opcionesTexto}.\n\n↩️Si quieres salir, escribe *X*`);
-          return fallBack('*Por favor, selecciona un horario en el que podamos comuniarnos personalmente*\n\n1️⃣ 10 a 12 hs\n2️⃣ 14 a 15 hs\n3️⃣ 17 a 19 hs\n\n❎Salir del cuestionario');
+          return fallBack('Elige el horario que te sea de comodidad y me contactaré personalmente.\n\n1️⃣ 10 a 12 hs\n2️⃣ 14 a 15 hs\n3️⃣ 17 a 19 hs\n\n❎Salir del cuestionario');
           }
       }
   
       if (selectedOptions.length > 1) {
         if (isOutOfSchedule()) {
           await flowDynamic(`⚠️ Por favor, elige *sólo una opción* válida:\n ${opcionesTexto}\n\n↩️Si quieres salir, escribe *X*`);
-          return fallBack(`*Por favor, selecciona un horario en el que podamos comunicarnos personalmente*\n(⚠️ El horario elegido corre a partir del lunes)\n\n1️⃣ 10 a 12 hs\n2️⃣ 14 a 15 hs\n3️⃣ 17 a 19 hs\n\n❎Salir del cuestionario`);
+          return fallBack(`Elige el horario que te sea de comodidad y me contactaré personalmente.\n(⚠️ El horario elegido corre a partir del lunes)\n\n1️⃣ 10 a 12 hs\n2️⃣ 14 a 15 hs\n3️⃣ 17 a 19 hs\n\n❎Salir del cuestionario`);
   
         }else {
           await flowDynamic(`⚠️ Por favor, elige *sólo una opción* válida:\n ${opcionesTexto}\n\n↩️Si quieres salir, escribe *X*`);
-          return fallBack('*Por favor, selecciona un horario en el que podamos comuniarnos personalmente*\n\n1️⃣ 10 a 12 hs\n2️⃣ 14 a 15 hs\n3️⃣ 17 a 19 hs\n\n❎Salir del cuestionario');
+          return fallBack('Elige el horario que te sea de comodidad y me contactaré personalmente.\n\n1️⃣ 10 a 12 hs\n2️⃣ 14 a 15 hs\n3️⃣ 17 a 19 hs\n\n❎Salir del cuestionario');
           }
       }
   
@@ -392,7 +401,7 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
         console.log(`Marca seleccionada: ${marca}`);
         // const estado = state.getMyState();
         // console.log(estado);
-
+        await utils.delay(3000);
         await flowDynamic(`¡Genial! Seleccionaste la marca ${marca}.`);
     })
     .addAction(async (ctx, { state, flowDynamic }) => {
@@ -472,11 +481,11 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
                 {
                     body: `🔹 *Producto*: ${producto.name}\n💰 *Precio*: $${precioFormateado}\n📋 *Garantía*: ${garantia}\n🔗 *Link*: ${producto.permalink}`,
                     media: imagenConvertida,
-                },'📦Voy a consultar el stock, nuestros productos vuelan y tengo que chequear constantemente 😅'
+                },'📦Voy a consultar el stock.\n(Nuestros productos vuelan y tengo que chequear constantemente 😅)'
             ]
           );
         }
-
+        await utils.delay(3000);
         return gotoFlow(flujoFinal);
     });
 
@@ -514,9 +523,10 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
       }
       await state.update({ frigorias });
       console.log(`Frigorías: ${frigorias}`);
+      await utils.delay(2000);
+      await flowDynamic(`Seleccionaste ${frigorias} frigorías.`);
       await utils.delay(3000);
-
-      return await flowDynamic([`Seleccionaste ${frigorias} frigorías.`,'*¿Qué marca prefieres?*\n\n1️⃣ Surrey\n2️⃣ Midea\n3️⃣ York\n\n❎: Salir del cuestionario']);
+      return await flowDynamic(['*¿Qué marca prefieres?*\n\n1️⃣ Surrey\n2️⃣ Midea\n3️⃣ York\n\n❎: Salir del cuestionario']);
     })
     .addAction(
       { capture: true }, async (ctx, { fallBack, flowDynamic, gotoFlow }) => {
@@ -618,7 +628,7 @@ const flowPrincipal = addKeyword(['quiero más información', 'repetir'])
 // }
 
   await utils.delay(3000);
-  await flowDynamic(["👋 Hola, bienvenido a *Surair Climatización* 😊\n📍 Nos encontramos en *Pedro Pico 276*, Bahía Blanca",
+  await flowDynamic(["👋 Hola, bienvenido a *Surair Climatización* 😊\n📍 Nos encontramos en *Pedro Pico 276*, *Bahía Blanca*",
 "🙋‍♀️ Mi Nombre es Milva, soy asesora comercial de la empresa.\n\n¿Estás buscando algún equipo en particular?\n🤝 Voy a ayudarte con eso"
   ]);
   
@@ -627,13 +637,13 @@ const flowPrincipal = addKeyword(['quiero más información', 'repetir'])
   if (isLocal) {
 
     await flowDynamic([
-      {body: "Te comparto las opciones de pago que tenemos actualmente de forma presencial 💳",
+      {body: "Antes que nada, te comparto las opciones de pago que tenemos actualmente de forma presencial 💳",
       media: 'https://iili.io/dyr6EPt.jpg'}
     ]);
   } else {
 
     await flowDynamic([
-      {body: "Te comparto las opciones de pago que tenemos actualmente a distancia 💸",
+      {body: "Antes que nada, te comparto las opciones de pago que tenemos a distancia. Actualmente mediante transferencia, *únicamente*  💸",
       media: 'https://iili.io/29qoSsI.jpg'}
     ]);
   }
@@ -641,7 +651,9 @@ const flowPrincipal = addKeyword(['quiero más información', 'repetir'])
 .addAction(async (ctx, { flowDynamic }) => {
   await utils.delay(3000);
 
-  await flowDynamic("👉 *Responde indicando las opciones numeradas*\n\n(Son sólo 3 preguntas, no te preocupes 😎)");
+  await flowDynamic("👉 *Por favor, responde indicando las opciones numeradas*\n\n(Son sólo 3 preguntas, no te preocupes 😎)");
+  await utils.delay(3000);
+
   await flowDynamic("*Elige la tecnología que buscas*\n\n1️⃣: Inverter *(35% de ahorro energético)*\n2️⃣: ON/OFF\n\n❎: Salir del cuestionario");
 })
 .addAction({ capture: true }, async (ctx, { flowDynamic, fallBack, gotoFlow }) => {
@@ -670,7 +682,7 @@ const flowPrincipal = addKeyword(['quiero más información', 'repetir'])
 
   
 const main = async () => {
-    const adapterFlow = createFlow([flowPrincipal, flujoTecnologia, flujoFrigorias, flujoMarca, flujoFinal, flujoSalida, flujoFinalHorario, flujoFinalMedio, flujoCargaDatos]);
+    const adapterFlow = createFlow([flowPrincipal, flujoTecnologia, flujoFrigorias, flujoMarca, flujoFinal, flujoSalida, flujoFinalHorario, flujoCargaDatos]);
 
     const adapterProvider = createProvider(Provider);
     const adapterDB = new Database();

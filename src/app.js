@@ -617,7 +617,7 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
   );
   
   // Flujo Principal
-const flowPrincipal = addKeyword(['anuncio', 'repetir'])
+const flowPrincipal = addKeyword(['anuncio','publicación', 'repetir'])
 .addAction(async (ctx, { flowDynamic, blacklist }) => {
   console.log('Mensaje entrante');
   const isLocal = await isBahiaBlanca(ctx.from);

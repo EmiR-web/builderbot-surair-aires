@@ -205,8 +205,10 @@ const buscarProductos = async (marca, tecnologia, frigorias) => {
 };
 /////// INICIO DE FLUJOS DE CONVERSACIÓN /////// 
 const flujoSalida = addKeyword(EVENTS.ACTION)
-.addAnswer(['↩️Saliste del cuestionario.','👩‍💻Escribime tu consulta y a la brevedad me comunicaré.','','🔄️Si quieres reiniciar, escribe *repetir*.']);
-
+.addAction(async (ctx, {flowDynamic}) => {
+  console.log('Salida del bot');
+  await flowDynamic('↩️Saliste del cuestionario.\n👩‍💻Escribime tu consulta y a la brevedad me comunicaré.\n\n🔄️Si quieres reiniciar, escribe *repetir*.');
+});
 
 const flujoCargaDatos = addKeyword(EVENTS.ACTION)
 .addAction(async (ctx, { state, blacklist, endFlow }) => {
@@ -615,9 +617,9 @@ const flujoFinalHorario = addKeyword(EVENTS.ACTION)
   );
   
   // Flujo Principal
-const flowPrincipal = addKeyword(['quiero más información', 'repetir'])
+const flowPrincipal = addKeyword(['anuncio', 'repetir'])
 .addAction(async (ctx, { flowDynamic, blacklist }) => {
-  // console.log(ctx);
+  console.log('Mensaje entrante');
   const isLocal = await isBahiaBlanca(ctx.from);
   // const listaNegra = blacklist.checkIf(ctx.from);
   // console.log(listaNegra);
